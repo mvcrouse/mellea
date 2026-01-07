@@ -78,10 +78,11 @@ class ToolMessage(Message):
         self,
         role: Message.Role,
         content: str,
-        tool_output: Any,
-        name: str,
-        args: Mapping[str, Any],
-        tool: ModelToolCall,
+        tool_output: Any | None = None,
+        name: str | None = None,
+        args: Mapping[str, Any] | None = None,
+        tool: ModelToolCall | None = None,
+        tool_calls: list[dict] | None = None,
     ):
         """Initializer for Chat messages.
 
@@ -92,12 +93,23 @@ class ToolMessage(Message):
             args: The args required to call the function.
             tool_output: the output of the tool/function call.
             tool: the ModelToolCall representation.
+            tool_calls: the ModelToolCall representation if provided a list of tool calls.
         """
         super().__init__(role, content)
         self.name = name
         self.arguments = args
         self._tool_output = tool_output
         self._tool = tool
+        self._tool_calls = tool_calls
+
+    @property
+    def tool_calls(self) -> list[dict] | None:
+        """Returns underlying list of tool calls.
+
+        Returns:
+            list[dict]: List of tool calls
+        """
+        return self._tool_calls
 
     def format_for_llm(self) -> TemplateRepresentation:
         """The same representation as Message with a name field added to args."""
