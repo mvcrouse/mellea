@@ -1,0 +1,114 @@
+---
+title: "mellea.stdlib.components.intrinsic.guardian"
+sidebarTitle: "mellea.stdlib.components.intrinsic.guardian"
+description: "Intrinsic functions for Guardian safety and hallucination detection."
+---
+
+
+import { SidebarFix } from "/snippets/SidebarFix.mdx";
+
+<SidebarFix />
+
+Intrinsic functions for Guardian safety and hallucination detection.
+
+
+
+
+
+The guardian-core LoRA adapter uses a `<guardian>` protocol tag in the last
+user message to specify system prompt, criteria, and scoring schema. This
+differs from other intrinsics, which rely on the `instruction` field in
+`io.yaml`.
+
+
+## Functions
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `policy_guardrails` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/intrinsic/guardian.py#L15" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+policy_guardrails(context: ChatContext, backend: AdapterMixin, policy_text: str) -> str
+```
+
+
+Checks whether text complied with specified policy.
+
+Uses the policy_guardrails LoRA adapter to judge whether the scenario
+described in the last message in `context` is compliant with the given `policy_text`.
+
+:param context: Chat context containing the conversation to evaluate.
+:param backend: Backend instance that supports LoRA adapters.
+:param policy_text: Policy against with compliance is to be checked
+:return: Compliance as a "Yes/No/Ambiguous" label (Yes = compliant).
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `guardian_check` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/intrinsic/guardian.py#L123" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+guardian_check(context: ChatContext, backend: AdapterMixin, criteria: str, target_role: str = 'assistant') -> float
+```
+
+
+Check whether text meets specified safety/quality criteria.
+
+Uses the guardian-core LoRA adapter to judge whether the last message
+from `target_role` in `context` meets the given criteria.
+
+**Args:**
+- `context`: Chat context containing the conversation to evaluate.
+- `backend`: Backend instance that supports LoRA adapters.
+- `criteria`: Description of the criteria to check against. Can be a
+key from \:data\:`CRITERIA_BANK` (e.g. `"harm"`) or a custom
+criteria string.
+- `target_role`: Role whose last message is being evaluated
+(`"user"` or `"assistant"`).
+
+**Returns:**
+- Risk score as a float between 0.0 (no risk) and 1.0 (risk detected).
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `factuality_detection` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/intrinsic/guardian.py#L162" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+factuality_detection(context: ChatContext, backend: AdapterMixin) -> float
+```
+
+
+Determine is the last response is factually incorrect.
+
+Intrinsic function that evaluates the factuality of the
+assistant's response to a user's question. The context should end with
+a user question followed by an assistant answer.
+
+:param context: Chat context containing user question and assistant answer.
+:param backend: Backend instance that supports LoRA/aLoRA adapters.
+
+:return: Factuality score as a "yes/no" label (yes = factually incorrect).
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `factuality_correction` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/intrinsic/guardian.py#L187" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+factuality_correction(context: ChatContext, backend: AdapterMixin) -> float
+```
+
+
+Corrects the last response so that it is factually correct.
+
+Intrinsic function that corrects the assistant's response to a user's
+question relative to the given contextual information.
+
+:param context: Chat context containing user question and assistant answer.
+:param backend: Backend instance that supports LoRA/aLoRA adapters.
+
+:return: Correct assistant response.
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />

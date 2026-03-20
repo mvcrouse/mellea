@@ -1,0 +1,185 @@
+---
+title: "mellea.backends.watsonx"
+sidebarTitle: "mellea.backends.watsonx"
+description: "A generic WatsonX.ai compatible backend that wraps around the watson_machine_learning library."
+---
+
+
+import { SidebarFix } from "/snippets/SidebarFix.mdx";
+
+<SidebarFix />
+
+A generic WatsonX.ai compatible backend that wraps around the watson_machine_learning library.
+
+
+
+
+
+## Classes
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `WatsonxAIBackend` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/watsonx.py#L57" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+
+A generic backend class for watsonx SDK.
+
+**Args:**
+- `model_id`: WatsonX model identifier. Defaults to
+`model_ids.IBM_GRANITE_4_HYBRID_SMALL`.
+- `formatter`: Formatter for rendering components.
+Defaults to [`TemplateFormatter`](../formatters/template_formatter#class-templateformatter).
+- `base_url`: URL for the WatsonX ML deployment endpoint;
+defaults to the `WATSONX_URL` environment variable.
+- `model_options`: Default model options for generation requests.
+- `api_key`: WatsonX API key; defaults to the
+`WATSONX_API_KEY` environment variable.
+- `project_id`: WatsonX project ID; defaults to the
+`WATSONX_PROJECT_ID` environment variable.
+
+**Attributes:**
+- `to_mellea_model_opts_map_chats`: Mapping from chat-endpoint option names
+to Mellea [`ModelOption`](model_options#class-modeloption) sentinel keys.
+- `from_mellea_model_opts_map_chats`: Mapping from Mellea sentinel keys to
+chat-endpoint option names.
+- `to_mellea_model_opts_map_completions`: Mapping from completions-endpoint
+option names to Mellea [`ModelOption`](model_options#class-modeloption) sentinel keys.
+- `from_mellea_model_opts_map_completions`: Mapping from Mellea sentinel
+keys to completions-endpoint option names.
+
+
+
+<div className="h-8" />
+**Methods:**
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `filter_chat_completions_kwargs` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/watsonx.py#L193" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+filter_chat_completions_kwargs(self, model_options: dict) -> dict
+```
+
+Filter kwargs to only include valid watsonx chat.completions.create parameters.
+
+**Args:**
+- `model_options`: Model options dict that may contain non-chat keys.
+
+**Returns:**
+- A dict containing only keys accepted by the WatsonX chat endpoint.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `generate_from_chat_context` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/watsonx.py#L315" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+generate_from_chat_context(self, action: Component[C] | CBlock, ctx: Context) -> ModelOutputThunk[C]
+```
+
+Generate a new completion from the provided context using this backend's formatter.
+
+Formats the context and action into WatsonX-compatible chat messages, submits
+the request asynchronously, and returns a thunk that lazily resolves the output.
+
+**Args:**
+- `action`: The component or content block to generate
+a completion for.
+- `ctx`: The current generation context.
+- `_format`: Optional Pydantic model class for
+structured output decoding.
+- `model_options`: Per-call model options.
+- `tool_calls`: If `True`, expose available tools and parse responses.
+
+**Returns:**
+- ModelOutputThunk[C]: A thunk holding the (lazy) model output.
+
+**Raises:**
+- `Exception`: If `action` is an `ALoraRequirement`, which is not
+supported by this backend.
+- `RuntimeError`: If not called from a thread with a running event loop.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `processing` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/watsonx.py#L465" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+processing(self, mot: ModelOutputThunk, chunk: dict)
+```
+
+Accumulate content from a single WatsonX response dict into the output thunk.
+
+Called for each non-streaming chat dict (with a `"message"` key) or
+streaming delta dict (with a `"delta"` key). Tool call parsing is
+handled in the post-processing step.
+
+**Args:**
+- `mot`: The output thunk being populated.
+- `chunk`: A single response dict or streaming delta from the WatsonX API.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `post_processing` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/watsonx.py#L517" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+post_processing(self, mot: ModelOutputThunk, conversation: list[dict], tools: dict[str, AbstractMelleaTool], seed, _format)
+```
+
+Finalize the output thunk after WatsonX generation completes.
+
+Reconstructs a merged chat response from streaming chunks if applicable,
+extracts any tool call requests, records token usage metrics, emits telemetry,
+and attaches the generate log.
+
+**Args:**
+- `mot`: The output thunk to finalize.
+- `conversation`: The chat conversation sent to the model,
+used for logging.
+- `tools`: Available tools, keyed by name.
+- `seed`: The random seed used during generation, or `None`.
+- `_format`: The structured output format class used during generation, if any.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `generate_from_raw` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/watsonx.py#L628" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+generate_from_raw(self, actions: list[Component[C]], ctx: Context) -> list[ModelOutputThunk[C]]
+```
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `generate_from_raw` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/watsonx.py#L639" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+generate_from_raw(self, actions: list[Component[C] | CBlock], ctx: Context) -> list[ModelOutputThunk[C | str]]
+```
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `generate_from_raw` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/watsonx.py#L649" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+generate_from_raw(self, actions: Sequence[Component[C] | CBlock], ctx: Context) -> list[ModelOutputThunk]
+```
+
+Generate completions for multiple actions without chat templating via WatsonX.
+
+Passes formatted prompt strings directly to WatsonX's generate endpoint.
+The `format` parameter is not supported and will be ignored with a warning.
+
+**Args:**
+- `actions`: Actions to generate completions for.
+- `ctx`: The current generation context.
+- `format`: Not supported; ignored with a warning.
+- `model_options`: Per-call model options.
+- `tool_calls`: Ignored; tool calling is not supported on this endpoint.
+
+**Returns:**
+- list\[ModelOutputThunk]: A list of model output thunks, one per action.
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />

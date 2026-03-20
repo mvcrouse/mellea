@@ -1,0 +1,88 @@
+---
+title: "mellea.backends.utils"
+sidebarTitle: "mellea.backends.utils"
+description: "Shared utility functions used across formatter-based backend implementations."
+---
+
+
+import { SidebarFix } from "/snippets/SidebarFix.mdx";
+
+<SidebarFix />
+
+Shared utility functions used across formatter-based backend implementations.
+
+
+
+
+
+Provides `to_chat`, which converts a [`Context`](../core/base#class-context) and a [`Component`](../core/base#class-component) action into
+the list of role/content dicts expected by `apply_chat_template`; and
+`to_tool_calls`, which parses a raw model output string into validated
+[`ModelToolCall`](../core/base#class-modeltoolcall) objects. These helpers are consumed internally by all
+[`FormatterBackend`](backend#class-formatterbackend) subclasses.
+
+
+## Functions
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `get_value` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/utils.py#L27" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+get_value(obj: Any, key: str) -> Any
+```
+
+
+Get value from dict or object attribute.
+
+**Args:**
+- `obj`: Dict or object
+- `key`: Key or attribute name
+
+**Returns:**
+- Value if found, None otherwise
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `to_chat` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/utils.py#L42" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+to_chat(action: Component | CBlock, ctx: Context, formatter: ChatFormatter, system_prompt: str | None) -> list[Chat]
+```
+
+
+Converts a context and an action into a series of dicts to be passed to apply_chat_template.
+
+This function is used by local inference backends.
+
+**Args:**
+- `action`: The next component or CBlock to generate output for.
+- `ctx`: The current conversation context.
+- `formatter`: The chat formatter used to convert context and action to messages.
+- `system_prompt`: Optional system prompt to prepend; overrides any system message in the context.
+
+**Returns:**
+- List of role/content dicts suitable for `apply_chat_template`.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `to_tool_calls` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/utils.py#L91" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+to_tool_calls(tools: dict[str, AbstractMelleaTool], decoded_result: str) -> dict[str, ModelToolCall] | None
+```
+
+
+Parse a tool call string.
+
+**Args:**
+- `tools`: Mapping of tool name to the corresponding `AbstractMelleaTool` object.
+- `decoded_result`: Raw model output string that may contain tool call markup.
+
+**Returns:**
+- Dict mapping tool name to validated [`ModelToolCall`](../core/base#class-modeltoolcall), or `None` if no tool calls were found.
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />

@@ -1,0 +1,180 @@
+---
+title: "mellea.stdlib.components.unit_test_eval"
+sidebarTitle: "mellea.stdlib.components.unit_test_eval"
+description: "LLM Evaluation with Unit Tests in Mellea."
+---
+
+
+import { SidebarFix } from "/snippets/SidebarFix.mdx";
+
+<SidebarFix />
+
+LLM Evaluation with Unit Tests in Mellea.
+
+
+
+
+
+## Classes
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `Message` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/unit_test_eval.py#L12" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+
+Schema for a message in the test data.
+
+**Attributes:**
+- `role`: The role of the message sender (e.g. `"user"` or
+`"assistant"`).
+- `content`: The text content of the message.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `Example` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/unit_test_eval.py#L25" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+
+Schema for an example in the test data.
+
+**Attributes:**
+- `input`: The input messages for this example.
+- `targets`: The expected target messages for scoring.
+- `input_id`: An optional identifier for this input example.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `TestData` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/unit_test_eval.py#L39" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+
+Schema for test data loaded from json.
+
+**Attributes:**
+- `source`: Origin identifier for this test dataset.
+- `name`: Human-readable name for this test dataset.
+- `instructions`: Evaluation guidelines used by the judge model.
+- `examples`: The individual input/target example pairs.
+- `id`: Unique identifier for this test dataset.
+
+
+
+<div className="h-8" />
+**Methods:**
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `validate_examples` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/unit_test_eval.py#L58" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+validate_examples(cls, v: list[Example]) -> list[Example]
+```
+
+Validate that the examples list is not empty.
+
+**Args:**
+- `v`: The value of the `examples` field being
+validated.
+
+**Returns:**
+- list[Example]: The validated examples list, unchanged.
+
+**Raises:**
+- `ValueError`: If the examples list is empty.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `TestBasedEval` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/unit_test_eval.py#L76" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+
+Each TestBasedEval represents a single unit test.
+
+**Args:**
+- `source`: Origin identifier for this test dataset.
+- `name`: Human-readable name for this test.
+- `instructions`: Evaluation guidelines used by the judge model.
+- `inputs`: The input texts for each example.
+- `targets`: Expected target strings for each
+input. `None` is treated as an empty list.
+- `test_id`: Optional unique identifier for this test.
+- `input_ids`: Optional identifiers for each input.
+
+
+
+<div className="h-8" />
+**Methods:**
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `parts` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/unit_test_eval.py#L110" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+parts(self) -> list[Component | CBlock]
+```
+
+Return the constituent parts of this component.
+
+**Returns:**
+- list\[Component | CBlock]: Always an empty list; the component
+- renders entirely via `format_for_llm`.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `format_for_llm` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/unit_test_eval.py#L119" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+format_for_llm(self) -> TemplateRepresentation
+```
+
+Format this test for judge evaluation.
+
+**Returns:**
+- A template representation containing the
+- judge context (input, prediction, target, guidelines) set by
+- `set_judge_context`, or an empty args dict if no context has
+- been set yet.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `set_judge_context` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/unit_test_eval.py#L138" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+set_judge_context(self, input_text: str, prediction: str, targets_for_input: list[str]) -> None
+```
+
+Set the context dictionary used when formatting this test for judge evaluation.
+
+**Args:**
+- `input_text`: The original input text shown to the model.
+- `prediction`: The model's generated output to evaluate.
+- `targets_for_input`: Reference target strings for this
+input. An empty list results in `"N/A"` as the target text.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `from_json_file` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/unit_test_eval.py#L166" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+from_json_file(cls, filepath: str) -> list['TestBasedEval']
+```
+
+Load test evaluations from a JSON file, returning one `TestBasedEval` per unit test.
+
+**Args:**
+- `filepath`: Path to a JSON file containing one test-data object
+or a JSON array of test-data objects.
+
+**Returns:**
+- list[TestBasedEval]: A list of `TestBasedEval` instances, one for
+- each object found in the file.
+
+**Raises:**
+- `ValueError`: If any test-data object in the file does not conform to
+the `TestData` schema.
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />

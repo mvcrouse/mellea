@@ -1,0 +1,132 @@
+---
+title: "mellea.backends.litellm"
+sidebarTitle: "mellea.backends.litellm"
+description: "A generic LiteLLM compatible backend that wraps around the openai python sdk."
+---
+
+
+import { SidebarFix } from "/snippets/SidebarFix.mdx";
+
+<SidebarFix />
+
+A generic LiteLLM compatible backend that wraps around the openai python sdk.
+
+
+
+
+
+## Classes
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `LiteLLMBackend` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/litellm.py#L54" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+
+A generic LiteLLM compatible backend.
+
+**Args:**
+- `model_id`: The LiteLLM model identifier string; typically
+`"<provider>/<model_creator>/<model_name>"`.
+- `formatter`: Formatter for rendering components.
+Defaults to [`TemplateFormatter`](../formatters/template_formatter#class-templateformatter).
+- `base_url`: Base URL for the LLM API endpoint; defaults to
+the Ollama local endpoint.
+- `model_options`: Default model options for generation requests.
+
+**Attributes:**
+- `to_mellea_model_opts_map`: Mapping from backend-specific option names to
+Mellea [`ModelOption`](model_options#class-modeloption) sentinel keys.
+- `from_mellea_model_opts_map`: Mapping from Mellea [`ModelOption`](model_options#class-modeloption) sentinel
+keys to backend-specific option names.
+
+
+
+<div className="h-8" />
+**Methods:**
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `processing` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/litellm.py#L391" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+processing(self, mot: ModelOutputThunk, chunk: litellm.ModelResponse | litellm.ModelResponseStream)
+```
+
+Accumulate content and thinking tokens from a single LiteLLM response chunk.
+
+Called during generation for each `ModelResponse` (non-streaming) or
+`ModelResponseStream` chunk (streaming). Tool call parsing is deferred to
+`post_processing`.
+
+**Args:**
+- `mot`: The output thunk being populated.
+- `chunk`: A single
+response object or streaming chunk from LiteLLM.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `post_processing` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/litellm.py#L458" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+post_processing(self, mot: ModelOutputThunk, conversation: list[dict], tools: dict[str, AbstractMelleaTool], thinking, _format)
+```
+
+Finalize the model output thunk after LiteLLM generation completes.
+
+Reconstructs a merged chat response from streaming chunks if applicable,
+extracts tool call requests, records token usage metrics, emits telemetry,
+and attaches the generate log to the output thunk.
+
+**Args:**
+- `mot`: The output thunk to finalize.
+- `conversation`: The chat conversation sent to the model,
+used for logging.
+- `tools`: Available tools, keyed by name.
+- `thinking`: The thinking/reasoning effort level passed to the model, or
+`None` if reasoning mode was not enabled.
+- `_format`: The structured output format class used during generation, if any.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `generate_from_raw` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/litellm.py#L587" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+generate_from_raw(self, actions: list[Component[C]], ctx: Context) -> list[ModelOutputThunk[C]]
+```
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `generate_from_raw` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/litellm.py#L598" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+generate_from_raw(self, actions: list[Component[C] | CBlock], ctx: Context) -> list[ModelOutputThunk[C | str]]
+```
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `generate_from_raw` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/litellm.py#L608" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+generate_from_raw(self, actions: Sequence[Component[C] | CBlock], ctx: Context) -> list[ModelOutputThunk]
+```
+
+Generate completions for multiple actions without chat templating via LiteLLM.
+
+Passes formatted prompt strings directly to LiteLLM's text completion endpoint.
+Tool calling is not supported on this endpoint.
+
+**Args:**
+- `actions`: Actions to generate completions for.
+- `ctx`: The current generation context.
+- `format`: Optional Pydantic model for
+structured output; passed as `guided_json` in the request body.
+- `model_options`: Per-call model options.
+- `tool_calls`: Ignored; tool calling is not supported on this endpoint.
+
+**Returns:**
+- list\[ModelOutputThunk]: A list of model output thunks, one per action.
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />

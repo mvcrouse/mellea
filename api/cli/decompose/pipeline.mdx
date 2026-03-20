@@ -1,0 +1,181 @@
+---
+title: "cli.decompose.pipeline"
+sidebarTitle: "cli.decompose.pipeline"
+description: "Core decomposition pipeline that breaks a task prompt into structured subtasks."
+---
+
+
+import { SidebarFix } from "/snippets/SidebarFix.mdx";
+
+<SidebarFix />
+
+Core decomposition pipeline that breaks a task prompt into structured subtasks.
+
+
+
+
+
+Provides the `decompose()` function, which orchestrates a series of LLM calls
+(subtask listing, constraint extraction, validation strategy selection, prompt
+generation, and constraint assignment) to produce a `DecompPipelineResult`
+containing subtasks, per-subtask prompts, constraints, and dependency information.
+Supports Ollama, OpenAI-compatible, and RITS inference backends.
+
+
+## Functions
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `build_backend_session` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/cli/decompose/pipeline.py#L142" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+build_backend_session(model_id: str = 'mistral-small3.2:latest', backend: DecompBackend = DecompBackend.ollama, backend_req_timeout: int = 300, backend_endpoint: str | None = None, backend_api_key: str | None = None, log_mode: LogMode = LogMode.demo) -> MelleaSession
+```
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `task_decompose` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/cli/decompose/pipeline.py#L214" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+task_decompose(m_session: MelleaSession, task_prompt: str, log_mode: LogMode = LogMode.demo) -> tuple[list[SubtaskItem], list[str]]
+```
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `constraint_validate` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/cli/decompose/pipeline.py#L242" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+constraint_validate(m_session: MelleaSession, task_constraints: list[str], log_mode: LogMode = LogMode.demo) -> dict[str, ConstraintValData]
+```
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `task_execute` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/cli/decompose/pipeline.py#L276" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+task_execute(m_session: MelleaSession, task_prompt: str, user_input_variable: list[str], subtasks: list[SubtaskItem], task_constraints: list[str], log_mode: LogMode = LogMode.demo) -> list[SubtaskPromptConstraintsItem]
+```
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `finalize_result` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/cli/decompose/pipeline.py#L396" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+finalize_result(m_session: MelleaSession, task_prompt: str, user_input_variable: list[str], subtasks: list[SubtaskItem], task_constraints: list[str], constraint_val_data: dict[str, ConstraintValData], subtask_prompts_with_constraints: list[SubtaskPromptConstraintsItem], log_mode: LogMode = LogMode.demo) -> DecompPipelineResult
+```
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `decompose` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/cli/decompose/pipeline.py#L483" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+decompose(task_prompt: str, user_input_variable: list[str] | None = None, model_id: str = 'mistral-small3.2:latest', backend: DecompBackend = DecompBackend.ollama, backend_req_timeout: int = 300, backend_endpoint: str | None = None, backend_api_key: str | None = None, log_mode: LogMode = LogMode.demo) -> DecompPipelineResult
+```
+
+
+Break a task prompt into structured subtasks using a multi-step LLM pipeline.
+
+Orchestrates a series of sequential LLM calls to produce a fully structured
+decomposition: subtask listing, constraint extraction, validation strategy
+selection, prompt template generation, and per-subtask constraint assignment.
+The number of calls depends on the number of constraints extracted.
+
+**Args:**
+- `task_prompt`: Natural-language description of the task to decompose.
+- `user_input_variable`: Optional list of variable names that will be
+templated into generated prompts as user-provided input data. Pass
+`None` or an empty list if the task requires no input variables.
+- `model_id`: Model name or ID used for all pipeline steps.
+- `backend`: Inference backend -- `"ollama"`, `"openai"`, or `"rits"`.
+- `backend_req_timeout`: Request timeout in seconds for model inference calls.
+- `backend_endpoint`: Base URL of the OpenAI-compatible endpoint. Required
+when `backend` is `"openai"` or `"rits"`.
+- `backend_api_key`: API key for the configured endpoint. Required when
+`backend` is `"openai"` or `"rits"`.
+- `log_mode`: Mode of logging detail to emit during pipeline execution.
+
+**Returns:**
+- A `DecompPipelineResult` containing the original prompt, subtask list,
+- identified constraints, and fully annotated subtask objects with prompt
+- templates, constraint assignments, and dependency information.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+## Classes
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `ConstraintValData` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/cli/decompose/pipeline.py#L35" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `ConstraintResult` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/cli/decompose/pipeline.py#L40" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+
+A single constraint paired with its assigned validation strategy.
+
+**Args:**
+- `constraint`: Natural-language description of the constraint.
+- `validation_strategy`: Strategy assigned to validate the constraint;
+either `"code"` or `"llm"`.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `DecompSubtasksResult` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/cli/decompose/pipeline.py#L55" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+
+The full structured result for one decomposed subtask.
+
+**Args:**
+- `subtask`: Natural-language description of the subtask.
+- `tag`: Short identifier for the subtask, used as a variable name
+in Jinja2 templates and dependency references.
+- `constraints`: List of constraints assigned to
+this subtask, each with a validation strategy.
+- `prompt_template`: Jinja2 prompt template string for this subtask,
+with `\{\{ variable \}\}` placeholders for inputs and prior subtask results.
+- `input_vars_required`: Ordered list of user-provided input
+variable names referenced in `prompt_template`.
+- `depends_on`: Ordered list of subtask tags whose results are
+referenced in `prompt_template`.
+- `generated_response`: Optional field holding the model response
+produced during execution; not present until the subtask runs.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `DecompPipelineResult` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/cli/decompose/pipeline.py#L84" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+
+The complete output of a decomposition pipeline run.
+
+**Attributes:**
+- `original_task_prompt`: The raw task prompt provided by the user.
+- `subtask_list`: Ordered list of subtask descriptions produced
+by the subtask-listing stage.
+- `identified_constraints`: Constraints extracted
+from the original task prompt, each with a validation strategy.
+- `subtasks`: Fully annotated subtask objects
+with prompt templates, constraint assignments, and dependency
+information.
+- `final_response`: Optional field holding the aggregated final
+response produced during execution; not present until the pipeline runs.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `DecompBackend` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/cli/decompose/pipeline.py#L107" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+
+Inference backends supported by the decomposition pipeline.
+
+**Args:**
+- `ollama`: Local Ollama inference server backend.
+- `openai`: Any OpenAI-compatible HTTP endpoint backend.
+- `rits`: IBM RITS (Remote Inference and Training Service) backend.
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />

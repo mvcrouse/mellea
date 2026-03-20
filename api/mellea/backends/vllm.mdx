@@ -1,0 +1,143 @@
+---
+title: "mellea.backends.vllm"
+sidebarTitle: "mellea.backends.vllm"
+description: "A backend that uses a VLLM in the current process."
+---
+
+
+import { SidebarFix } from "/snippets/SidebarFix.mdx";
+
+<SidebarFix />
+
+A backend that uses a VLLM in the current process.
+
+
+
+
+
+The purpose of the VLLM backend is to provide a locally running fast inference engine.
+
+
+## Classes
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `LocalVLLMBackend` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/vllm.py#L59" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+
+The LocalVLLMBackend uses vLLM's python interface for inference, and uses a Formatter to convert [`Component`](../core/base#class-component)s into prompts.
+
+The support for Activated LoRAs (ALoras)](https://arxiv.org/pdf/2504.12397) is planned.
+
+This backend is designed for running an HF model for small-scale inference locally on your machine.
+
+Its throughput is generally higher than that of LocalHFBackend.
+However, it takes longer to load the weights during the instantiation.
+Also, if you submit a request one by one, it can be slower.
+
+Note: vLLM defaults to ~16 tokens. Always set ModelOption.MAX_NEW_TOKENS explicitly (100-1000+).
+Structured output needs 200-500+ tokens.
+
+**Args:**
+- `model_id`: HuggingFace model ID used to load model weights via vLLM.
+- `formatter`: Formatter for rendering components into prompts.
+Defaults to a [`TemplateFormatter`](../formatters/template_formatter#class-templateformatter) for the given `model_id`.
+- `model_options`: Default model options for generation requests.
+
+**Attributes:**
+- `to_mellea_model_opts_map`: Mapping from backend-specific option names to
+Mellea [`ModelOption`](model_options#class-modeloption) sentinel keys.
+- `from_mellea_model_opts_map`: Mapping from Mellea [`ModelOption`](model_options#class-modeloption) sentinel
+keys to backend-specific option names.
+- `engine_args`: vLLM engine arguments used at instantiation; retained so the
+engine can be restarted when the event loop changes.
+
+
+
+<div className="h-8" />
+**Methods:**
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `processing` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/vllm.py#L391" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+processing(self, mot: ModelOutputThunk, chunk: vllm.RequestOutput)
+```
+
+Accumulate text from a single vLLM output chunk into the model output thunk.
+
+Called during streaming or final generation to add each incremental result to
+`mot._underlying_value`.
+
+**Args:**
+- `mot`: The output thunk being populated.
+- `chunk`: A single output from the vLLM generate stream.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `post_processing` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/vllm.py#L405" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+post_processing(self, mot: ModelOutputThunk, conversation: list[dict], _format: type[BaseModelSubclass] | None, tool_calls: bool, tools: dict[str, AbstractMelleaTool], seed)
+```
+
+Finalize the model output thunk after generation completes.
+
+Parses any tool calls from the raw output, attaches the generate log, and
+records metadata needed for telemetry.
+
+**Args:**
+- `mot`: The output thunk to finalize.
+- `conversation`: The chat conversation sent to the model,
+used for logging.
+- `_format`: The structured output format
+class used during generation, if any.
+- `tool_calls`: Whether tool calling was enabled for this request.
+- `tools`: Available tools, keyed by name.
+- `seed`: The random seed used during generation, or `None`.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `generate_from_raw` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/vllm.py#L462" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+generate_from_raw(self, actions: list[Component[C]], ctx: Context) -> list[ModelOutputThunk[C]]
+```
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `generate_from_raw` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/vllm.py#L473" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+generate_from_raw(self, actions: list[Component[C] | CBlock], ctx: Context) -> list[ModelOutputThunk[C | str]]
+```
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `generate_from_raw` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/vllm.py#L483" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+generate_from_raw(self, actions: Sequence[Component[C] | CBlock], ctx: Context) -> list[ModelOutputThunk]
+```
+
+Generate completions for multiple actions without chat templating.
+
+Passes the formatted prompt strings directly to vLLM's completion endpoint.
+Tool calling is not supported by this method.
+
+**Args:**
+- `actions`: Actions to generate completions for.
+- `ctx`: The current generation context.
+- `format`: Optional Pydantic model for
+structured output decoding.
+- `model_options`: Per-call model options.
+- `tool_calls`: Ignored; tool calling is not supported on this endpoint.
+
+**Returns:**
+- list\[ModelOutputThunk]: A list of model output thunks, one per action.
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />

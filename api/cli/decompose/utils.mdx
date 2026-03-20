@@ -1,0 +1,48 @@
+---
+title: "cli.decompose.utils"
+sidebarTitle: "cli.decompose.utils"
+description: "Filename validation utilities for the decompose pipeline."
+---
+
+
+import { SidebarFix } from "/snippets/SidebarFix.mdx";
+
+<SidebarFix />
+
+Filename validation utilities for the decompose pipeline.
+
+
+
+
+
+Provides `validate_filename`, which checks that a candidate output filename
+contains only safe characters (alphanumeric, underscores, hyphens, periods, and
+spaces) and falls within a reasonable length limit. Used to prevent path-traversal
+or shell-injection issues when writing decomposition output files.
+
+
+## Functions
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `validate_filename` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/cli/decompose/utils.py#L10" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+validate_filename(candidate_str: str) -> bool
+```
+
+
+Check whether a string is safe to use as an output filename.
+
+Permits alphanumeric characters, underscores, hyphens, periods, and spaces;
+the first character must be alphanumeric, an underscore, or a period.
+Also enforces a maximum length of 250 characters.
+
+**Args:**
+- `candidate_str`: The filename candidate to validate.
+
+**Returns:**
+- `True` if the string is a safe, valid filename; `False` otherwise.
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />

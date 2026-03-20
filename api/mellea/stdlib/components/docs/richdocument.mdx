@@ -1,0 +1,374 @@
+---
+title: "mellea.stdlib.components.docs.richdocument"
+sidebarTitle: "mellea.stdlib.components.docs.richdocument"
+description: "`RichDocument`, `Table`, and related helpers backed by Docling."
+---
+
+
+import { SidebarFix } from "/snippets/SidebarFix.mdx";
+
+<SidebarFix />
+
+`RichDocument`, `Table`, and related helpers backed by Docling.
+
+
+
+
+
+`RichDocument` wraps a `DoclingDocument` (e.g. produced by converting a PDF or
+Markdown file) and renders it as Markdown for a language model. `Table` represents a
+single table within a Docling document and provides `transpose`, `to_markdown`, and
+query/transform helpers. Use `RichDocument.from_document_file` to convert a PDF or
+other supported format, and `get_tables()` to extract structured table data for
+downstream LLM-driven Q&A or transformation tasks.
+
+
+## Classes
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `RichDocument` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L27" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+
+A `RichDocument` is a block of content backed by a `DoclingDocument`.
+
+Provides helper functions for working with the document and extracting parts
+such as tables. Use `from_document_file` to convert PDFs or other formats,
+and `save`/`load` for persistence.
+
+**Args:**
+- `doc`: The underlying Docling document to wrap.
+
+
+
+<div className="h-8" />
+**Methods:**
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `parts` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L42" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+parts(self) -> list[Component | CBlock]
+```
+
+Return the constituent parts of this document.
+
+Currently always returns an empty list. Future versions may support
+chunking the document into constituent parts.
+
+**Returns:**
+- list\[Component | CBlock]: Always an empty list.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `format_for_llm` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L55" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+format_for_llm(self) -> TemplateRepresentation | str
+```
+
+Return the document content as a Markdown string.
+
+No template is needed; the full document is exported to Markdown directly.
+
+**Returns:**
+- TemplateRepresentation | str: The full document rendered as Markdown.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `docling` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L69" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+docling(self) -> DoclingDocument
+```
+
+Return the underlying `DoclingDocument`.
+
+**Returns:**
+- The wrapped Docling document instance.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `to_markdown` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L77" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+to_markdown(self)
+```
+
+Get the full text of the document as markdown.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `get_tables` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L81" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+get_tables(self) -> list[Table]
+```
+
+Return all tables found in this document.
+
+**Returns:**
+- list\[Table]: A list of `Table` objects extracted from the document.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `save` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L89" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+save(self, filename: str | Path) -> None
+```
+
+Save the underlying `DoclingDocument` to a JSON file for later reuse.
+
+**Args:**
+- `filename`: Destination file path for the serialized
+document.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `load` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L101" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+load(cls, filename: str | Path) -> RichDocument
+```
+
+Load a `RichDocument` from a previously saved `DoclingDocument` JSON file.
+
+**Args:**
+- `filename`: Path to a JSON file previously created by
+`RichDocument.save`.
+
+**Returns:**
+- A new `RichDocument` wrapping the loaded document.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `from_document_file` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L117" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+from_document_file(cls, source: str | Path | DocumentStream) -> RichDocument
+```
+
+Convert a document file to a `RichDocument` using Docling.
+
+**Args:**
+- `source`: Path or stream for the
+source document (e.g. a PDF or Markdown file).
+
+**Returns:**
+- A new `RichDocument` wrapping the converted document.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `TableQuery` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L141" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+
+A `Query` component specialised for `Table` objects.
+
+Formats the table as Markdown alongside the query string so the LLM receives
+both the structured table content and the natural-language question.
+
+**Args:**
+- `obj`: The table to query.
+- `query`: The natural-language question to ask about the table.
+
+
+
+<div className="h-8" />
+**Methods:**
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `parts` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L156" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+parts(self) -> list[Component | CBlock]
+```
+
+Return the constituent parts of this table query.
+
+**Returns:**
+- list\[Component | CBlock]: A list containing the wrapped `Table`
+- object.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `format_for_llm` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L166" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+format_for_llm(self) -> TemplateRepresentation
+```
+
+Format this table query for the language model.
+
+Renders the table as Markdown alongside the query string, and forwards
+any tools and fields from the table's own representation.
+
+**Returns:**
+- Template args containing the query string
+- and the Markdown-rendered table.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `TableTransform` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L188" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+
+A `Transform` component specialised for `Table` objects.
+
+Formats the table as Markdown alongside the transformation instruction so the
+LLM receives both the structured table content and the mutation description.
+
+**Args:**
+- `obj`: The table to transform.
+- `transformation`: Natural-language description of the desired mutation.
+
+
+
+<div className="h-8" />
+**Methods:**
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `parts` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L203" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+parts(self) -> list[Component | CBlock]
+```
+
+Return the constituent parts of this table transform.
+
+**Returns:**
+- list\[Component | CBlock]: A list containing the wrapped `Table`
+- object.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `format_for_llm` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L213" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+format_for_llm(self) -> TemplateRepresentation
+```
+
+Format this table transform for the language model.
+
+Renders the table as Markdown alongside the transformation description,
+and forwards any tools and fields from the table's own representation.
+
+**Returns:**
+- Template args containing the transformation
+- description and the Markdown-rendered table.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `Table` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L238" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+
+A `Table` represents a single table within a larger Docling Document.
+
+**Args:**
+- `ti`: The Docling `TableItem` extracted from the document.
+- `doc`: The parent `DoclingDocument`. Passing `None`
+may cause downstream Docling functions to fail.
+
+
+
+<div className="h-8" />
+**Methods:**
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `from_markdown` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L254" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+from_markdown(cls, md: str) -> Table | None
+```
+
+Create a `Table` from a Markdown string by round-tripping through Docling.
+
+Wraps the Markdown in a minimal document, converts it with Docling, and
+returns the first table found.
+
+**Args:**
+- `md`: A Markdown string containing at least one table.
+
+**Returns:**
+- Table | None: The first `Table` extracted from the Markdown, or
+- `None` if no table could be found.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `parts` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L275" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+parts(self)
+```
+
+Return the constituent parts of this table component.
+
+The current implementation always returns an empty list because the
+table is rendered entirely through `format_for_llm`.
+
+**Returns:**
+- list\[Component | CBlock]: Always an empty list.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `to_markdown` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L286" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+to_markdown(self) -> str
+```
+
+Export this table as a Markdown string.
+
+**Returns:**
+- The Markdown representation of this table.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `transpose` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L294" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+transpose(self) -> Table | None
+```
+
+Transpose this table and return the result as a new `Table`.
+
+**Returns:**
+- Table | None: A new transposed `Table`, or `None` if the
+- transposed Markdown cannot be parsed back into a `Table`.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `format_for_llm` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/docs/richdocument.py#L304" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+format_for_llm(self) -> TemplateRepresentation | str
+```
+
+Return the table representation for the Formatter.
+
+**Returns:**
+- TemplateRepresentation | str: A [`TemplateRepresentation`](../../../core/base#class-templaterepresentation) that
+- renders the table as its Markdown string using a `\{\{table\}\}`
+- template.
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />

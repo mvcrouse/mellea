@@ -1,0 +1,339 @@
+---
+title: "mellea.formatters.granite.intrinsics.json_util"
+sidebarTitle: "mellea.formatters.granite.intrinsics.json_util"
+description: "JSON parsing utilities for Granite intrinsic formatters."
+---
+
+
+import { SidebarFix } from "/snippets/SidebarFix.mdx";
+
+<SidebarFix />
+
+JSON parsing utilities for Granite intrinsic formatters.
+
+
+
+
+
+Provides a fast, position-aware JSON literal parser (`JsonLiteralWithPosition`) used
+to extract and re-score tokens inside structured model outputs. The module also defines
+compiled regular expressions for JSON structural characters, numbers, booleans, and
+null values that are used throughout the Granite intrinsic formatting pipeline.
+
+
+## Functions
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `find_string_offsets` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/formatters/granite/intrinsics/json_util.py#L61" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+find_string_offsets(json_data: str) -> list[tuple[int, int, str]]
+```
+
+
+Find the offsets of all strings in valid JSON data.
+
+Find the offsets of all strings in the input, assuming that this input
+contains valid JSON.
+
+**Args:**
+- `json_data`: String containing valid JSON.
+
+**Returns:**
+- Begin and end offsets of all strings in `json_data`, including
+- the double quotes.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `non_string_offsets` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/formatters/granite/intrinsics/json_util.py#L86" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+non_string_offsets(json_str, compiled_regex, string_begins, string_ends)
+```
+
+
+Identify all matches of a regex that are not within string literals.
+
+**Args:**
+- `json_str`: Original string of valid JSON data.
+- `compiled_regex`: Compiled regex for the target token type.
+- `string_begins`: Table of string begin offsets within `json_str`.
+- `string_ends`: Table of string end offsets within `json_str`.
+
+**Returns:**
+- List of `(begin, end, matched_string)` tuples.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `tokenize_json` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/formatters/granite/intrinsics/json_util.py#L113" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+tokenize_json(json_str: str)
+```
+
+
+Lexer for parsing JSON.
+
+**Args:**
+- `json_str`: String representation of valid JSON data.
+
+**Returns:**
+- List of tuples of `(begin, end, value, type)`.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `reparse_value` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/formatters/granite/intrinsics/json_util.py#L146" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+reparse_value(tokens, offset) -> tuple[Any, int]
+```
+
+
+Parse JSON with offset generation using recursive-descent.
+
+Main entry point for a recursive-descent JSON parser with offset generation.
+Assumes valid JSON.
+
+**Args:**
+- `tokens`: Token stream as produced by `tokenize_json()`.
+- `offset`: Token offset at which to start parsing.
+
+**Returns:**
+- Tuple of `(parsed_value, next_offset)`.
+
+**Raises:**
+- `ValueError`: If an unexpected delimiter token or unknown token type is
+encountered at the current offset.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `reparse_object` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/formatters/granite/intrinsics/json_util.py#L179" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+reparse_object(tokens, offset) -> tuple[dict, int]
+```
+
+
+Parse a JSON object from the token stream, starting after the opening `\{`.
+
+Subroutine called by :func:`reparse_value` when an opening curly brace is
+encountered. Consumes tokens until the matching closing `\}` is found.
+
+**Args:**
+- `tokens`: Token stream as produced by `tokenize_json()`.
+- `offset`: Token offset immediately after the opening `\{` delimiter.
+
+**Returns:**
+- tuple[dict, int]: A tuple of `(parsed_dict, next_offset)` where
+`parsed_dict` maps string keys to parsed values (possibly
+:class:`JsonLiteralWithPosition` instances) and `next_offset`
+is the position of the next unconsumed token.
+
+**Raises:**
+- `ValueError`: If the token stream does not conform to valid JSON object
+syntax (e.g. missing colon, unexpected delimiter, or non-string key).
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `reparse_list` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/formatters/granite/intrinsics/json_util.py#L233" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+reparse_list(tokens, offset) -> tuple[list, int]
+```
+
+
+Parse a JSON array from the token stream, starting after the opening `[`.
+
+Subroutine called by :func:`reparse_value` when an opening square bracket is
+encountered. Consumes tokens until the matching closing `]` is found.
+
+**Args:**
+- `tokens`: Token stream as produced by `tokenize_json()`.
+- `offset`: Token offset immediately after the opening `[` delimiter.
+
+**Returns:**
+- tuple[list, int]: A tuple of `(parsed_list, next_offset)` where
+`parsed_list` contains the parsed elements (possibly
+:class:`JsonLiteralWithPosition` instances) and `next_offset`
+is the position of the next unconsumed token.
+
+**Raises:**
+- `ValueError`: If the token stream does not conform to valid JSON array
+syntax (e.g. unexpected delimiter between elements).
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `reparse_json_with_offsets` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/formatters/granite/intrinsics/json_util.py#L272" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+reparse_json_with_offsets(json_str: str) -> Any
+```
+
+
+Reparse a JSON string to compute the offsets of all literals.
+
+**Args:**
+- `json_str`: String known to contain valid JSON data.
+
+**Returns:**
+- Parsed representation of `json_str`, with literals at the leaf nodes of
+- the parse tree replaced with `JsonLiteralWithPosition` instances containing
+- position information.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `scalar_paths` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/formatters/granite/intrinsics/json_util.py#L287" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+scalar_paths(parsed_json) -> list[tuple]
+```
+
+
+Get paths to all scalar values in parsed JSON.
+
+**Args:**
+- `parsed_json`: JSON data parsed into native Python objects.
+
+**Returns:**
+- A list of paths to scalar values within `parsed_json`, where each
+- path is expressed as a tuple. The root element of a bare scalar is an empty
+- tuple.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `all_paths` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/formatters/granite/intrinsics/json_util.py#L311" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+all_paths(parsed_json) -> list[tuple]
+```
+
+
+Find all possible paths within a parsed JSON value.
+
+**Args:**
+- `parsed_json`: JSON data parsed into native Python objects.
+
+**Returns:**
+- A list of paths to all elements of the parse tree of `parsed_json`,
+- where each path is expressed as a tuple. The root element of a bare scalar is
+- an empty tuple.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `fetch_path` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/formatters/granite/intrinsics/json_util.py#L332" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+fetch_path(json_value: Any, path: tuple)
+```
+
+
+Get the node at the indicated path in JSON.
+
+**Args:**
+- `json_value`: Parsed JSON value.
+- `path`: A tuple of names/numbers that indicates a path from root to a leaf
+or internal node of `json_value`.
+
+**Returns:**
+- The node at the indicated path.
+
+**Raises:**
+- `TypeError`: If `path` is not a tuple, if a path element is not a string
+or integer, or if an intermediate node is not a dict or list.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `replace_path` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/formatters/granite/intrinsics/json_util.py#L369" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+replace_path(json_value: Any, path: tuple, new_value: Any) -> Any
+```
+
+
+Modify a parsed JSON value in place by setting a particular path.
+
+**Args:**
+- `json_value`: Parsed JSON value.
+- `path`: A tuple of names/numbers indicating a path from root to the target node.
+- `new_value`: New value to place at the indicated location.
+
+**Returns:**
+- The modified input, or `new_value` itself if the root was replaced.
+
+**Raises:**
+- `TypeError`: If `path` is not a tuple, or if any error propagated from
+\:func\:`fetch_path` during path traversal.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `parse_inline_json` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/formatters/granite/intrinsics/json_util.py#L394" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+parse_inline_json(json_response: dict) -> dict
+```
+
+
+Replace the JSON strings in message contents with parsed JSON.
+
+**Args:**
+- `json_response`: Parsed JSON representation of a `ChatCompletionResponse` object.
+
+**Returns:**
+- Deep copy of the input with JSON message content strings replaced by parsed
+- Python objects.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `make_begin_to_token_table` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/formatters/granite/intrinsics/json_util.py#L415" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+make_begin_to_token_table(logprobs: ChatCompletionLogProbs | None)
+```
+
+
+Create a table mapping token begin positions to token indices.
+
+**Args:**
+- `logprobs`: The token log probabilities from the chat completion, or `None`
+if the chat completion request did not ask for logprobs.
+
+**Returns:**
+- A dictionary mapping token begin positions to token indices,
+- or `None` if `logprobs` is `None`.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+## Classes
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `JsonLiteralWithPosition` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/formatters/granite/intrinsics/json_util.py#L40" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+
+JSON literal value with its position in the source string.
+
+**Attributes:**
+- `value`: The parsed Python value of the JSON
+literal (string, boolean, integer, or float).
+- `begin`: Start offset (inclusive) of the literal within the source
+JSON string.
+- `end`: End offset (exclusive) of the literal within the source
+JSON string.
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />

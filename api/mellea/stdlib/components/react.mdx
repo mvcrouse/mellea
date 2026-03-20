@@ -1,0 +1,117 @@
+---
+title: "mellea.stdlib.components.react"
+sidebarTitle: "mellea.stdlib.components.react"
+description: "Components that implement the ReACT (Reason + Act) agentic pattern."
+---
+
+
+import { SidebarFix } from "/snippets/SidebarFix.mdx";
+
+<SidebarFix />
+
+Components that implement the ReACT (Reason + Act) agentic pattern.
+
+
+
+
+
+Provides `ReactInitiator`, which primes the model with a goal and a tool list, and
+`ReactThought`, which signals a thinking step. Also exports the
+`MELLEA_FINALIZER_TOOL` sentinel string used to signal loop termination. These
+components are consumed by `mellea.stdlib.frameworks.react`, which orchestrates the
+reasoning-acting cycle until the model invokes `final_answer` or the step budget
+is exhausted.
+
+
+## Classes
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `ReactInitiator` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/react.py#L35" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+
+`ReactInitiator` is used at the start of the ReACT loop to prime the model.
+
+**Args:**
+- `goal`: The objective of the react loop.
+- `tools`: Tools available to the agent.
+`None` is treated as an empty list.
+
+**Attributes:**
+- `goal`: The objective of the react loop wrapped as a content block.
+- `tools`: The tools made available to the react agent.
+
+
+
+<div className="h-8" />
+**Methods:**
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `parts` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/react.py#L53" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+parts(self) -> list[Component | CBlock]
+```
+
+Return the constituent parts of this component.
+
+**Returns:**
+- list\[Component | CBlock]: A list containing the goal content block.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `format_for_llm` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/react.py#L61" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+format_for_llm(self) -> TemplateRepresentation
+```
+
+Formats the [`Component`](../../core/base#class-component) into a [`TemplateRepresentation`](../../core/base#class-templaterepresentation) or string.
+
+Returns: a [`TemplateRepresentation`](../../core/base#class-templaterepresentation) whose tools always includes a finalizer tool.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `ReactThought` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/react.py#L93" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+
+ReactThought signals that a thinking step should be done.
+
+
+
+<div className="h-8" />
+**Methods:**
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `parts` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/react.py#L99" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+parts(self) -> list[Component | CBlock]
+```
+
+Return the constituent parts of this component.
+
+`ReactThought` has no sub-components; it solely triggers a thinking step.
+
+**Returns:**
+- list\[Component | CBlock]: Always an empty list.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `format_for_llm` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/stdlib/components/react.py#L113" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+format_for_llm(self) -> TemplateRepresentation
+```
+
+Formats the [`Component`](../../core/base#class-component) into a [`TemplateRepresentation`](../../core/base#class-templaterepresentation) or string.
+
+Returns: a [`TemplateRepresentation`](../../core/base#class-templaterepresentation) whose tools always includes a finalizer tool.
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />

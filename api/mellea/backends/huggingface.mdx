@@ -1,0 +1,297 @@
+---
+title: "mellea.backends.huggingface"
+sidebarTitle: "mellea.backends.huggingface"
+description: "A backend that uses the Huggingface Transformers library."
+---
+
+
+import { SidebarFix } from "/snippets/SidebarFix.mdx";
+
+<SidebarFix />
+
+A backend that uses the Huggingface Transformers library.
+
+
+
+
+
+The purpose of the Hugginface backend is to provide a setting for implementing experimental features. If you want a performance local backend, and do not need experimental features such as Span-based context or ALoras, consider using Ollama backends instead.
+
+
+## Classes
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `HFAloraCacheInfo` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/huggingface.py#L80" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+
+A dataclass for holding a KV cache and associated generation metadata.
+
+Used by `LocalHFBackend` to store intermediate model state that can be
+reused across generation requests via an LRU cache.
+
+**Args:**
+- `kv_cache`: The HuggingFace `DynamicCache` holding
+precomputed key/value tensors, or `None` if not available.
+- `merged_token_ids`: Token IDs corresponding to the cached prefix.
+- `merged_attention`: Attention mask for the cached prefix tokens.
+- `q_end`: Index of the last prompt token in the merged token sequence;
+defaults to `-1`.
+- `scores`: Optional logit scores from the generation step; defaults to
+`None`.
+
+**Attributes:**
+- `kv_cache`: The cached key/value tensors.
+- `merged_token_ids`: Token IDs for the cached prefix.
+- `merged_attention`: Attention mask for the cached prefix.
+- `q_end`: End index of the prompt portion in merged token IDs.
+- `scores`: Logit scores from generation, or `None`.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#4ADE8033]/20 text-[#15803D]">CLASS</span> `LocalHFBackend` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/huggingface.py#L214" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+
+The LocalHFBackend uses Huggingface's transformers library for inference, and uses a Formatter to convert [`Component`](../core/base#class-component)s into prompts. This backend also supports Activated LoRAs (ALoras)](https://arxiv.org/pdf/2504.12397).
+
+This backend is designed for running an HF model for small-scale inference locally on your machine.
+
+This backend is NOT designed for inference scaling on CUDA-enabled hardware.
+
+**Args:**
+- `model_id`: Used to load the model and tokenizer via
+HuggingFace `Auto*` classes.
+- `formatter`: Formatter for rendering components into
+prompts. Defaults to [`TemplateFormatter`](../formatters/template_formatter#class-templateformatter).
+- `use_caches`: If `False`, KV caching is disabled even if a `Cache`
+is provided.
+- `cache`: Caching strategy; defaults to
+`SimpleLRUCache(0, on_evict=_cleanup_kv_cache)`.
+- `custom_config`: Override for
+tokenizer/model/device; if provided, `model_id` is not used for loading.
+- `default_to_constraint_checking_alora`: If `False`, aLoRA constraint
+checking is deactivated; mainly for benchmarking and debugging.
+- `model_options`: Default model options for generation requests.
+
+**Attributes:**
+- `to_mellea_model_opts_map`: Mapping from HF-specific option names to
+Mellea [`ModelOption`](model_options#class-modeloption) sentinel keys.
+- `from_mellea_model_opts_map`: Mapping from Mellea sentinel keys to
+HF-specific option names.
+
+
+
+<div className="h-8" />
+**Methods:**
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `processing` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/huggingface.py#L1032" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+processing(self, mot: ModelOutputThunk, chunk: str | GenerateDecoderOnlyOutput, input_ids)
+```
+
+Accumulate decoded text from a streaming chunk or full generation output.
+
+For streaming responses the chunk is an already-decoded string from
+`AsyncTextIteratorStreamer`; for non-streaming it is a
+`GenerateDecoderOnlyOutput` that is decoded here.
+
+**Args:**
+- `mot`: The output thunk being populated.
+- `chunk`: A decoded text chunk (streaming)
+or a full HuggingFace generation output object (non-streaming).
+- `input_ids`: The prompt token IDs used for decoding; required to slice off
+the prompt portion from the generated sequences.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `post_processing` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/huggingface.py#L1062" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+post_processing(self, mot: ModelOutputThunk, conversation: list[dict], _format: type[BaseModelSubclass] | None, tool_calls: bool, tools: dict[str, AbstractMelleaTool], seed, input_ids)
+```
+
+Finalize the output thunk after HuggingFace generation completes.
+
+Stores the KV cache for future reuse, parses tool calls if applicable,
+records token usage metrics, emits telemetry, and attaches the generate log.
+
+**Args:**
+- `mot`: The output thunk to finalize.
+- `conversation`: The chat conversation sent to the model,
+used for logging.
+- `_format`: The structured output format
+class used during generation, if any.
+- `tool_calls`: Whether tool calling was enabled for this request.
+- `tools`: Available tools, keyed by name.
+- `seed`: The random seed used during generation, or `None`.
+- `input_ids`: The prompt token IDs; used to compute token counts and for
+KV cache bookkeeping.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `generate_from_raw` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/huggingface.py#L1217" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+generate_from_raw(self, actions: list[Component[C]], ctx: Context) -> list[ModelOutputThunk[C]]
+```
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `generate_from_raw` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/huggingface.py#L1228" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+generate_from_raw(self, actions: list[Component[C] | CBlock], ctx: Context) -> list[ModelOutputThunk[C | str]]
+```
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `generate_from_raw` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/huggingface.py#L1238" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+generate_from_raw(self, actions: Sequence[Component[C] | CBlock], ctx: Context) -> list[ModelOutputThunk]
+```
+
+Generate completions for multiple actions without chat templating.
+
+Passes formatted prompt strings directly to the HuggingFace model's
+`generate` method as a batch. Tool calling is not supported.
+
+**Args:**
+- `actions`: Actions to generate completions for.
+- `ctx`: The current generation context.
+- `format`: Optional Pydantic model for
+structured output decoding via llguidance.
+- `model_options`: Per-call model options.
+- `tool_calls`: Ignored; tool calling is not supported on this endpoint.
+
+**Returns:**
+- list\[ModelOutputThunk]: A list of model output thunks, one per action.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `cache_get` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/huggingface.py#L1362" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+cache_get(self, id: str | int) -> HFAloraCacheInfo | None
+```
+
+Retrieve a cached `HFAloraCacheInfo` entry by its key.
+
+**Args:**
+- `id`: The cache key to look up.
+
+**Returns:**
+- HFAloraCacheInfo | None: The cached entry, or `None` if not found.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `cache_put` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/huggingface.py#L1375" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+cache_put(self, id: str | int, v: HFAloraCacheInfo)
+```
+
+Store an `HFAloraCacheInfo` entry in the cache under the given key.
+
+**Args:**
+- `id`: The cache key to store the entry under.
+- `v`: The cache entry containing KV cache state
+and associated generation metadata.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `base_model_name` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/huggingface.py#L1459" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+base_model_name(self)
+```
+
+Returns the base_model_id of the model used by the backend. For example, `granite-3.3-8b-instruct` for `ibm-granite/granite-3.3-8b-instruct`.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `add_adapter` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/huggingface.py#L1463" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+add_adapter(self, adapter: LocalHFAdapter)
+```
+
+Register a LoRA/aLoRA adapter with this backend so it can be loaded later.
+
+Downloads the adapter weights (via `adapter.get_local_hf_path`) and records
+the adapter in the backend's registry. The adapter must not already be
+registered with a different backend.
+
+**Args:**
+- `adapter`: The adapter to register with this backend.
+
+**Raises:**
+- `Exception`: If `adapter` has already been added to a different backend.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `load_adapter` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/huggingface.py#L1497" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+load_adapter(self, adapter_qualified_name: str)
+```
+
+Load a previously registered adapter into the underlying HuggingFace model.
+
+The adapter must have been registered via `add_adapter` first. Do not call
+this method while generation requests are in progress.
+
+**Args:**
+- `adapter_qualified_name`: The `adapter.qualified_name` of the adapter
+to load (i.e. `"<name>_<adapter_type>"`)
+
+**Raises:**
+- `ValueError`: If no adapter with the given qualified name has been added to
+this backend.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `unload_adapter` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/huggingface.py#L1541" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+unload_adapter(self, adapter_qualified_name: str)
+```
+
+Unload a previously loaded adapter from the underlying HuggingFace model.
+
+If the adapter is not currently loaded, a log message is emitted and the
+method returns without error.
+
+**Args:**
+- `adapter_qualified_name`: The `adapter.qualified_name` of the adapter
+to unload.
+
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
+
+#### <span className="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-bold tracking-wide bg-[#3064E3]/20 text-[#1D4ED8]">FUNC</span> `list_adapters` <sup><a href="https://github.com/generative-computing/mellea/blob/v0.4.0/mellea/backends/huggingface.py#L1564" target="_blank"><Icon icon="github" style="width: 14px; height: 14px;" /></a></sup>
+
+```python
+list_adapters(self) -> list[str]
+```
+
+List the qualified names of all adapters currently loaded in this backend.
+
+**Returns:**
+- list\[str]: Qualified adapter names (i.e. `adapter.qualified_name`) for
+all adapters that have been loaded via `load_adapter`.
+
+<div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-4" />
